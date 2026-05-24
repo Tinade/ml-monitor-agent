@@ -2,6 +2,7 @@ import os
 import asyncio
 from phoenix.otel import register
 from openinference.instrumentation.google_adk import GoogleADKInstrumentor
+from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset, StdioServerParameters
 from google.adk.agents import Agent
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
@@ -36,6 +37,18 @@ def restart_job(job_id: str) -> dict:
         return {"job_id": job_id, "action": "restarted", "success": True}
     return {"error": f"Job {job_id} not found"}
 
+# --- Phoenix MCP Toolset ---
+phoenix_mcp = MCPToolset(
+    connection_params=StdioServerParameters(
+        command="npx",
+        args=[
+            "-y",
+            "@arizeai/phoenix-mcp@latest",
+            "--baseUrl", "https://app.phoenix.arize.com/s/tsiged87",
+            "--apiKey", os.environ.get("PHOENIX_API_KEY", ""),
+        ],
+    )
+)
 # --- Agent Definition ---
 agent = Agent(
     name="ml_monitor_agent",
@@ -44,9 +57,11 @@ agent = Agent(
     instruction="""You are an ML infrastructure monitoring agent.
     When asked to check jobs, use check_job_status for each job.
     If a job is stalled or failed, automatically call restart_job.
-    Always explain what you found and what action you took.""",
-    tools=[check_job_status, restart_job],
+    Before acting, query your past traces using Phoenix MCP tools to learn from previous decisions.
+    Always explain what you found, what history you consulted, and what action you took.""",
+    tools=[check_job_status, restart_job, phoenix_mcp],
 )
+
 
 # --- Run the Agent ---
 async def main():

@@ -3,6 +3,7 @@ import asyncio
 from phoenix.otel import register
 from openinference.instrumentation.google_adk import GoogleADKInstrumentor
 from google.adk.tools.mcp_tool.mcp_toolset import McpToolset, StdioConnectionParams
+from mcp import StdioServerParameters
 from google.adk.agents import Agent
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
@@ -41,13 +42,15 @@ def restart_job(job_id: str) -> dict:
 # --- Phoenix MCP Toolset ---
 phoenix_mcp = McpToolset(
     connection_params=StdioConnectionParams(
-        command="npx",
-        args=[
-            "-y",
-            "@arizeai/phoenix-mcp@latest",
-            "--baseUrl", "https://app.phoenix.arize.com/s/tsiged87",
-            "--apiKey", os.environ.get("PHOENIX_API_KEY", ""),
-        ],
+        server_params=StdioServerParameters(
+            command="npx",
+            args=[
+                "-y",
+                "@arizeai/phoenix-mcp@latest",
+                "--baseUrl", "https://app.phoenix.arize.com/s/tsiged87",
+                "--apiKey", os.environ.get("PHOENIX_API_KEY", ""),
+            ],
+        )
     )
 )
 # --- Agent Definition ---

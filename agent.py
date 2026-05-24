@@ -39,7 +39,6 @@ def restart_job(job_id: str) -> dict:
     return {"error": f"Job {job_id} not found"}
 
 # --- Phoenix MCP Toolset ---
-# --- Phoenix MCP Toolset ---
 phoenix_mcp = McpToolset(
     connection_params=StdioConnectionParams(
         server_params=StdioServerParameters(
@@ -53,6 +52,7 @@ phoenix_mcp = McpToolset(
         )
     )
 )
+
 # --- Agent Definition ---
 agent = Agent(
     name="ml_monitor_agent",
@@ -65,7 +65,6 @@ agent = Agent(
     Always explain what you found, what history you consulted, and what action you took.""",
     tools=[check_job_status, restart_job, phoenix_mcp],
 )
-
 
 # --- Run the Agent ---
 async def main():
@@ -90,9 +89,10 @@ async def main():
         new_message=message,
     ):
         if event.is_final_response():
-            print("Agent:", event.response.text)
+            if hasattr(event, 'content') and event.content:
+                for part in event.content.parts:
+                    if hasattr(part, 'text') and part.text:
+                        print("Agent:", part.text)
 
 if __name__ == "__main__":
     asyncio.run(main())
-
-

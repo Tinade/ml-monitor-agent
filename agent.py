@@ -2,7 +2,7 @@ import os
 import asyncio
 from phoenix.otel import register
 from openinference.instrumentation.google_adk import GoogleADKInstrumentor
-from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset, StdioServerParameters
+from google.adk.tools.mcp_tool.mcp_toolset import McpToolset, StdioConnectionParams
 from google.adk.agents import Agent
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
@@ -38,8 +38,9 @@ def restart_job(job_id: str) -> dict:
     return {"error": f"Job {job_id} not found"}
 
 # --- Phoenix MCP Toolset ---
-phoenix_mcp = MCPToolset(
-    connection_params=StdioServerParameters(
+# --- Phoenix MCP Toolset ---
+phoenix_mcp = McpToolset(
+    connection_params=StdioConnectionParams(
         command="npx",
         args=[
             "-y",

@@ -66,7 +66,8 @@ agent = Agent(
     Always explain what you found, what history you consulted, and what action you took.""",
     tools=[check_job_status, restart_job, phoenix_mcp],
 )
-
+# Capture original job states before agent acts
+original_states = {job_id: dict(job) for job_id, job in JOBS.items()}
 # --- Run the Agent ---
 async def main():
     session_service = InMemorySessionService()
@@ -94,17 +95,25 @@ async def main():
                 for part in event.content.parts:
                     if hasattr(part, 'text') and part.text:
                         print("Agent:", part.text)
+
 # --- Evaluate Agent Decisions ---
     print("\n--- Evaluating Agent Decisions ---\n")
     for job_id, job in JOBS.items():
+        original = original_states[job_id]
         if job["status"] == "restarted":
-            evaluation = evaluate_decision(
-                job_id=job_id,
-                job_status=job,
-                action="restart_job",
-                outcome={"success": True}
-            )
-            print(f"Evaluation for {job_id}: {evaluation}")
+            action = "restart_job"
+            outcome = {"success": True}
+        else:
+            action = "do_nothing"
+            outcome = {"success": True, "reason": "job is healthy"}
+        
+        evaluation = evaluate_decision(
+            job_id=job_id,
+            job_status=original,
+            action=action,
+            outcome=outcome
+        )
+        print(f"Evaluation for {job_id}: {evaluation}")
 
 if __name__ == "__main__":
     asyncio.run(main())

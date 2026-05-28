@@ -1,5 +1,6 @@
 import os
 import asyncio
+from evaluator import evaluate_decision
 from phoenix.otel import register
 from openinference.instrumentation.google_adk import GoogleADKInstrumentor
 from google.adk.tools.mcp_tool.mcp_toolset import McpToolset, StdioConnectionParams
@@ -93,6 +94,17 @@ async def main():
                 for part in event.content.parts:
                     if hasattr(part, 'text') and part.text:
                         print("Agent:", part.text)
+# --- Evaluate Agent Decisions ---
+    print("\n--- Evaluating Agent Decisions ---\n")
+    for job_id, job in JOBS.items():
+        if job["status"] == "restarted":
+            evaluation = evaluate_decision(
+                job_id=job_id,
+                job_status=job,
+                action="restart_job",
+                outcome={"success": True}
+            )
+            print(f"Evaluation for {job_id}: {evaluation}")
 
 if __name__ == "__main__":
     asyncio.run(main())

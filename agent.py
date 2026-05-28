@@ -23,7 +23,24 @@ JOBS = {
     "job_002": {"status": "stalled", "progress": 12, "loss": 0.99},
     "job_003": {"status": "failed",  "progress": 0,  "loss": None},
 }
-
+# --- Test Scenarios ---
+SCENARIOS = {
+    "Baseline": {
+        "job_001": {"status": "running", "progress": 45, "loss": 0.82},
+        "job_002": {"status": "stalled", "progress": 12, "loss": 0.99},
+        "job_003": {"status": "failed",  "progress": 0,  "loss": None},
+    },
+    "Harder": {
+        "job_001": {"status": "stalled", "progress": 30, "loss": 0.95},
+        "job_002": {"status": "failed",  "progress": 0,  "loss": None},
+        "job_003": {"status": "failed",  "progress": 0,  "loss": None},
+    },
+    "Complex": {
+        "job_001": {"status": "failed",  "progress": 0,  "loss": None},
+        "job_002": {"status": "failed",  "progress": 0,  "loss": None},
+        "job_003": {"status": "stalled", "progress": 5,  "loss": 0.98},
+    },
+}
 # --- Agent Tools ---
 def check_job_status(job_id: str) -> dict:
     """Check the current status of an ML training job."""
@@ -67,7 +84,7 @@ agent = Agent(
     tools=[check_job_status, restart_job, phoenix_mcp],
 )
 # Capture original job states before agent acts
-original_states = {job_id: dict(job) for job_id, job in JOBS.items()}
+
 # --- Run the Agent ---
 async def main():
     session_service = InMemorySessionService()
@@ -80,6 +97,8 @@ async def main():
         app_name="ml-monitor-agent",
         session_service=session_service,
     )
+    original_states = {job_id: dict(job) for job_id, job in JOBS.items()}
+
     print("\n--- ML Monitor Agent Starting ---\n")
     message = Content(
         role="user",
@@ -96,7 +115,7 @@ async def main():
                     if hasattr(part, 'text') and part.text:
                         print("Agent:", part.text)
 
-# --- Evaluate Agent Decisions ---
+    # --- Evaluate Agent Decisions ---
     print("\n--- Evaluating Agent Decisions ---\n")
     for job_id, job in JOBS.items():
         original = original_states[job_id]

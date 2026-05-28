@@ -84,9 +84,22 @@ agent = Agent(
     tools=[check_job_status, restart_job, phoenix_mcp],
 )
 # Capture original job states before agent acts
-
-# --- Run the Agent ---
-async def main():
+async def run_scenario(scenario_name: str, scenario_jobs: dict) -> list:
+    """Run the agent on a specific scenario and return evaluation scores."""
+    
+    # Update global JOBS with scenario data
+    global JOBS
+    JOBS.clear()
+    JOBS.update(scenario_jobs)
+    
+    print(f"\n{'='*50}")
+    print(f"SCENARIO: {scenario_name}")
+    print(f"{'='*50}\n")
+    
+    # Capture original states
+    original_states = {job_id: dict(job) for job_id, job in JOBS.items()}
+    
+    # Run agent
     session_service = InMemorySessionService()
     session = await session_service.create_session(
         app_name="ml-monitor-agent",
@@ -97,9 +110,6 @@ async def main():
         app_name="ml-monitor-agent",
         session_service=session_service,
     )
-    original_states = {job_id: dict(job) for job_id, job in JOBS.items()}
-
-    print("\n--- ML Monitor Agent Starting ---\n")
     message = Content(
         role="user",
         parts=[Part(text="Check all jobs: job_001, job_002, job_003 and fix any issues.")]
@@ -115,24 +125,86 @@ async def main():
                     if hasattr(part, 'text') and part.text:
                         print("Agent:", part.text)
 
-    # --- Evaluate Agent Decisions ---
-    print("\n--- Evaluating Agent Decisions ---\n")
+    # Evaluate decisions
+    scores = []
+    print(f"\n--- Evaluating {scenario_name} ---\n")
     for job_id, job in JOBS.items():
         original = original_states[job_id]
-        if job["status"] == "restarted":
-            action = "restart_job"
-            outcome = {"success": True}
-        else:
-            action = "do_nothing"
-            outcome = {"success": True, "reason": "job is healthy"}
-        
+        action = "restart_job" if job["status"] == "restarted" else "do_nothing"
+        outcome = {"success": True}
         evaluation = evaluate_decision(
             job_id=job_id,
             job_status=original,
             action=action,
             outcome=outcome
         )
-        print(f"Evaluation for {job_id}: {evaluation}")
+        scores.append(evaluation)
+        print(f"{job_id}: score={evaluation['score']}/10 correct={evaluation['correct']}")
+    
+    return scores
+async def main():
+    all_scores = {}
+    
+    for scenario_name, scenario_jobs in SCENARIOS.items():
+        scores = await run_scenario(scenario_name, scenario_jobs)
+        all_scores[scenario_name] = scores
+    
+    # --- Print Comparison Table ---
+    print(f"\n{'='*50}")
+    print("RESULTS ACROSS ALL SCENARIOS")
+    print(f"{'='*50}\n")
+    
+    for scenario_name, scores in all_scores.items():
+        avg = sum(s['score'] for s in scores) / len(scores)
+        print(f"{scenario_name}: avg score = {avg:.1f}/10")
+# # --- Run the Agent ---
+# async def main():
+#     session_service = InMemorySessionService()
+#     session = await session_service.create_session(
+#         app_name="ml-monitor-agent",
+#         user_id="engineer-1",
+#     )
+#     runner = Runner(
+#         agent=agent,
+#         app_name="ml-monitor-agent",
+#         session_service=session_service,
+#     )
+#     original_states = {job_id: dict(job) for job_id, job in JOBS.items()}
+
+#     print("\n--- ML Monitor Agent Starting ---\n")
+#     message = Content(
+#         role="user",
+#         parts=[Part(text="Check all jobs: job_001, job_002, job_003 and fix any issues.")]
+#     )
+#     async for event in runner.run_async(
+#         user_id="engineer-1",
+#         session_id=session.id,
+#         new_message=message,
+#     ):
+#         if event.is_final_response():
+#             if hasattr(event, 'content') and event.content:
+#                 for part in event.content.parts:
+#                     if hasattr(part, 'text') and part.text:
+#                         print("Agent:", part.text)
+
+#     # --- Evaluate Agent Decisions ---
+#     print("\n--- Evaluating Agent Decisions ---\n")
+#     for job_id, job in JOBS.items():
+#         original = original_states[job_id]
+#         if job["status"] == "restarted":
+#             action = "restart_job"
+#             outcome = {"success": True}
+#         else:
+#             action = "do_nothing"
+#             outcome = {"success": True, "reason": "job is healthy"}
+        
+#         evaluation = evaluate_decision(
+#             job_id=job_id,
+#             job_status=original,
+#             action=action,
+#             outcome=outcome
+#         )
+#         print(f"Evaluation for {job_id}: {evaluation}")
 
 if __name__ == "__main__":
     asyncio.run(main())

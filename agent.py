@@ -28,19 +28,19 @@ JOBS = {
 # --- Test Scenarios ---
 SCENARIOS = {
     "Baseline": {
-        "job_001": {"status": "running", "progress": 45, "loss": 0.82},
-        "job_002": {"status": "stalled", "progress": 12, "loss": 0.99},
-        "job_003": {"status": "failed",  "progress": 0,  "loss": None},
+        "job_001": Job("job_001", "running", 45, 0.82),
+        "job_002": Job("job_002", "stalled", 12, 0.99),
+        "job_003": Job("job_003", "failed",  0,  None),
     },
     "Harder": {
-        "job_001": {"status": "stalled", "progress": 30, "loss": 0.95},
-        "job_002": {"status": "failed",  "progress": 0,  "loss": None},
-        "job_003": {"status": "failed",  "progress": 0,  "loss": None},
+        "job_001": Job("job_001", "stalled", 30, 0.95),
+        "job_002": Job("job_002", "failed",  0,  None),
+        "job_003": Job("job_003", "failed",  0,  None),
     },
     "Complex": {
-        "job_001": {"status": "failed",  "progress": 0,  "loss": None},
-        "job_002": {"status": "failed",  "progress": 0,  "loss": None},
-        "job_003": {"status": "stalled", "progress": 5,  "loss": 0.98},
+        "job_001": Job("job_001", "failed",  0,  None),
+        "job_002": Job("job_002", "failed",  0,  None),
+        "job_003": Job("job_003", "stalled", 5,  0.98),
     },
 }
 # --- Agent Tools ---

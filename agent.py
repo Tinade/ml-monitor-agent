@@ -49,14 +49,20 @@ def check_job_status(job_id: str) -> dict:
     job = JOBS.get(job_id)
     if not job:
         return {"error": f"Job {job_id} not found"}
-    return job.to_dict()
+    try:
+        return job.to_dict()
+    except Exception as e:
+        return {"error": f"Failed to read job {job_id}: {str(e)}"}
 
 def restart_job(job_id: str) -> dict:
     """Restart a failed or stalled ML training job."""
     job = JOBS.get(job_id)
     if not job:
         return {"error": f"Job {job_id} not found"}
-    return job.restart()
+    try:
+        return job.restart()
+    except Exception as e:
+        return {"error": f"Failed to restart job {job_id}: {str(e)}"}
 
 # --- Phoenix MCP Toolset ---
 phoenix_mcp = McpToolset(

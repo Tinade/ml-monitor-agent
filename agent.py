@@ -79,16 +79,19 @@ async def run_scenario(scenario_name: str, scenario_jobs: dict) -> list:
         role="user",
         parts=[Part(text="Check all jobs: job_001, job_002, job_003 and fix any issues.")]
     )
-    async for event in runner.run_async(
-        user_id="engineer-1",
-        session_id=session.id,
-        new_message=message,
-    ):
-        if event.is_final_response():
-            if hasattr(event, 'content') and event.content:
-                for part in event.content.parts:
-                    if hasattr(part, 'text') and part.text:
-                        print("Agent:", part.text)
+    try:
+        async for event in runner.run_async(
+            user_id="engineer-1",
+            session_id=session.id,
+            new_message=message,
+        ):
+            if event.is_final_response():
+                if hasattr(event, 'content') and event.content:
+                    for part in event.content.parts:
+                        if hasattr(part, 'text') and part.text:
+                            print("Agent:", part.text)
+    except Exception as e:
+        print(f"Agent run failed for {scenario_name}: {str(e)}")
 
     # Evaluate decisions
     scores = []
@@ -97,15 +100,18 @@ async def run_scenario(scenario_name: str, scenario_jobs: dict) -> list:
         original = original_states[job_id]
         action = "restart_job" if job.status == "restarted" else "do_nothing"
         outcome = {"success": True}
-        evaluation = evaluate_decision(
-            job_id=job_id,
-            job_status=original,
-            action=action,
-            outcome=outcome
-        )
-        scores.append(evaluation)
-        print(f"{job_id}: score={evaluation['score']}/10 correct={evaluation['correct']}")
-    
+        try:
+            evaluation = evaluate_decision(
+                job_id=job_id,
+                job_status=original,
+                action=action,
+                outcome=outcome
+            )
+            scores.append(evaluation)
+            print(f"{job_id}: score={evaluation['score']}/10 correct={evaluation['correct']}")
+        except Exception as e:
+            print(f"Evaluation failed for {job_id}: {str(e)}")
+            
     return scores
 async def main():
     all_scores = {}

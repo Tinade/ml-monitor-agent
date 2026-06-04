@@ -34,4 +34,8 @@ def test_to_dict():
     assert result["status"] == "running"
     assert result["progress"] == 45
     assert result["loss"] == 0.82
+      
+def test_valid_statuses():
+    result = Job.valid_statuses()
+    assert result == ["running", "stalled", "failed", "restarted"]
     

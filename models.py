@@ -25,6 +25,10 @@ class Job:
         @staticmethod
         def valid_statuses() -> list:
             return ["running", "stalled", "failed", "restarted"]
+        def is_at_risk(self) -> bool:
+            if self.loss is not None and self.loss > 0.90 and self.progress < 20:
+                return True
+            return False
 if __name__ == "__main__":
     job = Job("job_001", "stalled", 12, 0.99)
     print(job.is_healthy())

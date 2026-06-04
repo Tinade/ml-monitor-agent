@@ -38,4 +38,15 @@ def test_to_dict():
 def test_valid_statuses():
     result = Job.valid_statuses()
     assert result == ["running", "stalled", "failed", "restarted"]
-    
+
+def test_is_at_risk_when_high_loss_low_progress():
+    job = Job("job_002", "running", 12, 0.99)
+    assert job.is_at_risk() == True
+
+def test_is_at_risk_when_healthy():
+    job = Job("job_001", "running", 45, 0.82)
+    assert job.is_at_risk() == False
+
+def test_is_at_risk_when_loss_is_none():
+    job = Job("job_003", "failed", 0, None)
+    assert job.is_at_risk() == False

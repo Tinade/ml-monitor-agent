@@ -56,7 +56,10 @@ agent = Agent(
     If the job is stalled or failed:
         - If history shows restarting worked before → restart and say "restarting because this worked before"
         - If no history exists → restart and say "no history found, restarting as default action"
-    If the job is running → do nothing.
+    If the job is running BUT at_risk is True:
+        - Warn: "job is running but at risk — loss is high and progress is low"
+        - Restart it proactively
+    If the job is running and at_risk is False → do nothing.
 
     STEP 4 — EXPLAIN YOUR DECISION:
     Always state:

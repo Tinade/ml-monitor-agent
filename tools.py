@@ -32,10 +32,14 @@ def check_job_status(job_id: str) -> dict:
         if not job:
             span.set_attribute("error", "job_not_found")
             return {"error": f"Job {job_id} not found"}
+        
         span.set_attribute("status", job.status)
         span.set_attribute("progress", job.progress)
+        span.set_attribute("at_risk", job.is_at_risk())
         try:
-            return job.to_dict()
+            result = job.to_dict()
+            result["at_risk"] = job.is_at_risk()
+            return result
         except Exception as e:
             return {"error": f"Failed to read job {job_id}: {str(e)}"}
 

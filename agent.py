@@ -11,13 +11,16 @@ from google.adk.sessions import InMemorySessionService
 from google.genai.types import Content, Part
 from tools import JOBS, SCENARIOS, check_job_status, restart_job
 import tools
+
+# --- Decision History ---
+DECISION_HISTORY = []
+
 # --- Phoenix Tracing Setup ---
 tracer_provider = register(
     project_name="ml-monitor-agent",
     auto_instrument=False,
 )
 GoogleADKInstrumentor().instrument(tracer_provider=tracer_provider)
-
 
 # --- Phoenix MCP Toolset ---
 phoenix_mcp = McpToolset(
@@ -62,22 +65,27 @@ agent = Agent(
     - What action you took and why""",
     tools=[check_job_status, restart_job, phoenix_mcp],
 )
-# Capture original job states before agent acts
+
 async def run_scenario(scenario_name: str, scenario_jobs: dict) -> list:
     """Run the agent on a specific scenario and return evaluation scores."""
-    
-    # Update global JOBS with scenario data
-   
+
     tools.JOBS.clear()
     tools.JOBS.update(scenario_jobs)
-    
+
     print(f"\n{'='*50}")
     print(f"SCENARIO: {scenario_name}")
     print(f"{'='*50}\n")
-    
+
     # Capture original states
     original_states = {job_id: job.to_dict() for job_id, job in tools.JOBS.items()}
-    
+
+    # Build history summary
+    history_summary = ""
+    if DECISION_HISTORY:
+        history_summary = "\n\nPAST DECISION HISTORY:\n"
+        for d in DECISION_HISTORY:
+            history_summary += f"- {d['scenario']}: {d['job_id']} was {d['original_status']} → {d['action']} → score {d['score']}/10 correct={d['correct']}\n"
+
     # Run agent
     session_service = InMemorySessionService()
     session = await session_service.create_session(
@@ -91,11 +99,12 @@ async def run_scenario(scenario_name: str, scenario_jobs: dict) -> list:
     )
     message = Content(
         role="user",
-        parts=[Part(text="""For each job (job_001, job_002, job_003):
-                1. Search Phoenix MCP for past traces for that job_id FIRST
-                2. Check the current job status
-                3. If stalled or failed, restart it
-                4. Explain what history you found and why you took that action.""")]
+        parts=[Part(text=f"""For each job (job_001, job_002, job_003):
+1. Check the current job status
+2. If stalled or failed, restart it
+3. Explain your decision using the history below{history_summary}
+
+If no history exists yet, say "no history found, restarting as default action." """)]
     )
     try:
         async for event in runner.run_async(
@@ -126,23 +135,32 @@ async def run_scenario(scenario_name: str, scenario_jobs: dict) -> list:
                 outcome=outcome
             )
             scores.append(evaluation)
+            DECISION_HISTORY.append({
+                "scenario": scenario_name,
+                "job_id": job_id,
+                "original_status": original["status"],
+                "action": action,
+                "score": evaluation["score"],
+                "correct": evaluation["correct"]
+            })
             print(f"{job_id}: score={evaluation['score']}/10 correct={evaluation['correct']}")
         except Exception as e:
             print(f"Evaluation failed for {job_id}: {str(e)}")
-            
+
     return scores
+
 async def main():
     all_scores = {}
-    
+
     for scenario_name, scenario_jobs in SCENARIOS.items():
         scores = await run_scenario(scenario_name, scenario_jobs)
         all_scores[scenario_name] = scores
-    
+
     # --- Print Comparison Table ---
     print(f"\n{'='*50}")
     print("RESULTS ACROSS ALL SCENARIOS")
     print(f"{'='*50}\n")
-    
+
     for scenario_name, scores in all_scores.items():
         avg = sum(s['score'] for s in scores) / len(scores)
         print(f"{scenario_name}: avg score = {avg:.1f}/10")

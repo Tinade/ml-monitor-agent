@@ -8,6 +8,6 @@ def test_is_healthy_when_stalled():
     job = Job("job_002", "stalled", 12, 0.99)
     assert job.is_healthy() == False
 
-def test_is_healthy_when_stalled():
+def test_is_healthy_when_failed():
     job = Job("job_002", "failed", 0, None)
     assert job.is_healthy() == False

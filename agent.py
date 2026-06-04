@@ -44,10 +44,9 @@ agent = Agent(
     description="Monitors ML training jobs and takes corrective action.",
     instruction="""You are an ML infrastructure monitoring agent.
 
-    STEP 1 — CHECK HISTORY FIRST (REQUIRED):
-    Before taking any action on a job, you MUST search Phoenix MCP for past traces related to that job.
-    Search for the job_id (e.g. "job_001") in past traces.
-    Look for: what was the status, what action was taken, what was the outcome.
+    STEP 1 — READ THE HISTORY PROVIDED:
+    History is provided directly in this message under PAST DECISION HISTORY.
+    Read it carefully before acting. No need to search Phoenix.
 
     STEP 2 — CHECK JOB STATUS:
     Use check_job_status for each job to get current status.

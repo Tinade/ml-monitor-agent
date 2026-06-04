@@ -26,4 +26,12 @@ def test_restart_when_running():
     job = Job("job_001", "running", 45, 0.82)
     result = job.restart()
     assert result["action"] == "skipped"
+
+def test_to_dict():
+    job = Job("job_001", "running", 45, 0.82)
+    result = job.to_dict()
+    assert result["job_id"] == "job_001"
+    assert result["status"] == "running"
+    assert result["progress"] == 45
+    assert result["loss"] == 0.82
     

@@ -19,8 +19,6 @@ tracer_provider = register(
 GoogleADKInstrumentor().instrument(tracer_provider=tracer_provider)
 
 
-
-
 # --- Phoenix MCP Toolset ---
 phoenix_mcp = McpToolset(
     connection_params=StdioConnectionParams(
@@ -42,10 +40,26 @@ agent = Agent(
     model="gemini-2.5-flash",
     description="Monitors ML training jobs and takes corrective action.",
     instruction="""You are an ML infrastructure monitoring agent.
-    When asked to check jobs, use check_job_status for each job.
-    If a job is stalled or failed, automatically call restart_job.
-    Before acting, query your past traces using Phoenix MCP tools to learn from previous decisions.
-    Always explain what you found, what history you consulted, and what action you took.""",
+
+    STEP 1 — CHECK HISTORY FIRST (REQUIRED):
+    Before taking any action on a job, you MUST search Phoenix MCP for past traces related to that job.
+    Search for the job_id (e.g. "job_001") in past traces.
+    Look for: what was the status, what action was taken, what was the outcome.
+
+    STEP 2 — CHECK JOB STATUS:
+    Use check_job_status for each job to get current status.
+
+    STEP 3 — DECIDE BASED ON HISTORY + CURRENT STATUS:
+    If the job is stalled or failed:
+        - If history shows restarting worked before → restart and say "restarting because this worked before"
+        - If no history exists → restart and say "no history found, restarting as default action"
+    If the job is running → do nothing.
+
+    STEP 4 — EXPLAIN YOUR DECISION:
+    Always state:
+    - What history you found in Phoenix
+    - What the current status is
+    - What action you took and why""",
     tools=[check_job_status, restart_job, phoenix_mcp],
 )
 # Capture original job states before agent acts
@@ -77,7 +91,11 @@ async def run_scenario(scenario_name: str, scenario_jobs: dict) -> list:
     )
     message = Content(
         role="user",
-        parts=[Part(text="Check all jobs: job_001, job_002, job_003 and fix any issues.")]
+        parts=[Part(text="""For each job (job_001, job_002, job_003):
+                1. Search Phoenix MCP for past traces for that job_id FIRST
+                2. Check the current job status
+                3. If stalled or failed, restart it
+                4. Explain what history you found and why you took that action.""")]
     )
     try:
         async for event in runner.run_async(

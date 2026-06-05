@@ -20,3 +20,8 @@ RUN npx -y @arizeai/phoenix-mcp@latest --version || true
 
 # Run the agent
 CMD ["python", "agent.py"]
+# Install uvicorn for FastAPI
+RUN pip install uvicorn
+
+# Run the server
+CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8080"]

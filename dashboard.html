@@ -297,50 +297,38 @@
             const msg = document.getElementById('status-msg');
 
             btn.disabled = true;
-            btn.textContent = '⏳ Starting agent...';
-            msg.textContent = 'Launching agent — this takes 2-3 minutes...';
+            btn.textContent = '⏳ Agent is running...';
+            msg.textContent = 'Agent is checking jobs, reading history, evaluating decisions... (2-3 minutes)';
 
             try {
-                const startResponse = await fetch('/run');
-                const startData = await startResponse.json();
-                const jobId = startData.job_id;
+                const response = await fetch('/run', { signal: AbortSignal.timeout(300000) });
+                const data = await response.json();
 
-                btn.textContent = '⏳ Agent is running...';
-                msg.textContent = 'Agent is checking jobs, reading history, evaluating decisions...';
+                btn.textContent = '✅ Done — Run Again';
+                btn.disabled = false;
+                msg.textContent = 'Agent completed. Scores updated below.';
 
-                const poll = setInterval(async () => {
-                    const statusResponse = await fetch(`/status/${jobId}`);
-                    const statusData = await statusResponse.json();
+                const results = data.results;
+                const scenarios = ['Baseline', 'Harder', 'Complex'];
 
-                    if (statusData.status === 'complete') {
-                        clearInterval(poll);
-                        btn.textContent = '✅ Done — Run Again';
-                        btn.disabled = false;
-                        msg.textContent = 'Agent completed. Scores updated below.';
-
-                        const results = statusData.results;
-                        const scenarios = ['Baseline', 'Harder', 'Complex'];
-
-                        scenarios.forEach(name => {
-                            if (results[name] && results[name].length > 0) {
-                                const scores = results[name];
-                                const avg = scores.reduce((a, b) => a + b.score, 0) / scores.length;
-                                const card = document.getElementById('scenario-' + name.toLowerCase());
-                                if (card) {
-                                    card.querySelector('.score-value').textContent = avg.toFixed(1) + '/10';
-                                    card.querySelector('.score-fill').style.width = (avg * 10) + '%';
-                                }
-                            }
-                        });
+                scenarios.forEach(name => {
+                    if (results[name] && results[name].length > 0) {
+                        const scores = results[name];
+                        const avg = scores.reduce((a, b) => a + b.score, 0) / scores.length;
+                        const card = document.getElementById('scenario-' + name.toLowerCase());
+                        if (card) {
+                            card.querySelector('.score-value').textContent = avg.toFixed(1) + '/10';
+                            card.querySelector('.score-fill').style.width = (avg * 10) + '%';
+                        }
                     }
-                }, 5000);
+                });
 
             } catch (e) {
                 btn.textContent = '▶ Run Agent Now';
                 btn.disabled = false;
                 msg.textContent = 'Error: ' + e.message;
             }
-        }
+        }   
     </script>
 </body>
 

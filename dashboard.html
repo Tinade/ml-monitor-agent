@@ -27,7 +27,7 @@
 
         .subtitle {
             color: #888;
-            margin-bottom: 30px;
+            margin-bottom: 15px;
         }
 
         .section {
@@ -175,6 +175,30 @@
             font-size: 0.8em;
             margin-left: 10px;
         }
+
+        .run-btn {
+            background: linear-gradient(90deg, #00d4ff, #00ff88);
+            color: #0f1117;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 10px;
+            margin-top: 10px;
+        }
+
+        .run-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .status-msg {
+            color: #888;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+        }
     </style>
 </head>
 
@@ -183,10 +207,13 @@
     <p class="subtitle">Autonomous ML job monitoring with self-improvement loop · Powered by Google ADK + Arize Phoenix
     </p>
 
+    <button class="run-btn" id="run-btn" onclick="runAgent()">▶ Run Agent Now</button>
+    <div class="status-msg" id="status-msg"></div>
+
     <div class="section">
         <h2>Job Status</h2>
         <div class="job-grid" id="job-grid">
-            <div class="job-card stalled">
+            <div class="job-card running">
                 <div class="job-id">job_001</div>
                 <span class="job-status status-running">running</span>
                 <div class="job-metrics">
@@ -217,7 +244,7 @@
     <div class="section">
         <h2>Scenario Results</h2>
         <div class="scenario-grid">
-            <div class="scenario-card">
+            <div class="scenario-card" id="scenario-baseline">
                 <div class="scenario-name">Baseline</div>
                 <div class="score-value">9.0/10</div>
                 <div class="score-bar">
@@ -225,7 +252,7 @@
                 </div>
                 <div style="font-size:0.85em; color:#aaa; margin-top:8px;">All jobs monitored correctly</div>
             </div>
-            <div class="scenario-card">
+            <div class="scenario-card" id="scenario-harder">
                 <div class="scenario-name">Harder</div>
                 <div class="score-value">9.3/10</div>
                 <div class="score-bar">
@@ -233,7 +260,7 @@
                 </div>
                 <div style="font-size:0.85em; color:#aaa; margin-top:8px;">Agent learned from Baseline history</div>
             </div>
-            <div class="scenario-card">
+            <div class="scenario-card" id="scenario-complex">
                 <div class="scenario-name">Complex</div>
                 <div class="score-value">9.0/10</div>
                 <div class="score-bar">
@@ -263,6 +290,42 @@
         Built with Google ADK · Gemini 2.5 Flash · Arize Phoenix · OpenTelemetry<br>
         github.com/Tinade/ml-monitor-agent
     </div>
-</body>
 
-</html>
+    <script>
+        async function runAgent() {
+            const btn = document.getElementById('run-btn');
+            const msg = document.getElementById('status-msg');
+
+            btn.disabled = true;
+            btn.textContent = '⏳ Agent is running...';
+            msg.textContent = 'Checking jobs, reading history, evaluating decisions...';
+
+            try {
+                const response = await fetch('/run');
+                const data = await response.json();
+
+                btn.textContent = '✅ Done — Run Again';
+                btn.disabled = false;
+                msg.textContent = 'Agent completed. Scores updated below.';
+
+                const results = data.results;
+                const scenarios = ['Baseline', 'Harder', 'Complex'];
+
+                scenarios.forEach(name => {
+                    if (results[name]) {
+                        const scores = results[name];
+                        const avg = scores.reduce((a, b) => a + b.score, 0) / scores.length;
+                        const card = document.getElementById('scenario-' + name.toLowerCase());
+                        if (card) {
+                            card.querySelector('.score-value').textContent = avg.toFixed(1) + '/10';
+                            card.querySelector('.score-fill').style.width = (avg * 10) + '%';
+                        }
+                    }
+                });
+
+            } catch (e) {
+                btn.textContent = '▶ Run Agent Now';
+                btn.disabled = false;
+                msg.textContent = 'Error: ' + e.message;
+            }
+        }

@@ -40,12 +40,9 @@ async def status(job_id: str):
     if not result:
         return {"status": "not_found"}
     return result
-async def run():
-    all_scores = {}
-    for scenario_name, scenario_jobs in SCENARIOS.items():
-        scores = await run_scenario(scenario_name, scenario_jobs)
-        all_scores[scenario_name] = [
-            {"job_id": s["job_id"], "score": s["score"], "correct": s["correct"]}
-            for s in scores
-        ] if scores else []
-    return {"results": all_scores}
+@app.get("/run")
+async def run(background_tasks: BackgroundTasks):
+    job_id = str(uuid.uuid4())
+    RESULTS[job_id] = {"status": "running"}
+    background_tasks.add_task(run_all_scenarios, job_id)
+    return {"job_id": job_id, "status": "running"}

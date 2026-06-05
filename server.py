@@ -1,4 +1,5 @@
 import asyncio
+from fastapi.responses import HTMLResponse
 from fastapi import FastAPI
 from agent import run_scenario, DECISION_HISTORY
 from tools import SCENARIOS
@@ -12,6 +13,10 @@ async def root():
 @app.get("/health")
 async def health():
     return {"status": "healthy"}
+@app.get("/dashboard", response_class=HTMLResponse)
+async def dashboard():
+    with open("dashboard.html") as f:
+        return f.read()
 
 @app.get("/run")
 async def run():

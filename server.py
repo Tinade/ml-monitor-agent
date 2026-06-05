@@ -40,6 +40,8 @@ async def status(job_id: str):
     if not result:
         return {"status": "not_found"}
     return result
+
+@app.get("/run")
 async def run():
     all_scores = {}
     for scenario_name, scenario_jobs in SCENARIOS.items():

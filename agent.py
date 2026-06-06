@@ -12,8 +12,7 @@ from google.adk.sessions import InMemorySessionService
 from google.genai.types import Content, Part
 from tools import JOBS, SCENARIOS, check_job_status, restart_job
 import tools
-
-# --- Decision History ---
+from models import Job# --- Decision History ---
 DECISION_HISTORY = []
 
 # --- Phoenix Tracing Setup ---
@@ -163,10 +162,9 @@ async def main():
         # Reset JOBS to original state before each run
         tools.JOBS.clear()
         tools.JOBS.update({
-            "job_001": Job("job_001", "running", 45, 0.82),
-            "job_002": Job("job_002", "stalled", 12, 0.99),
-            "job_003": Job("job_003", "failed",  0,  None),
-        })
+              job_id: Job(job.job_id, job.status, job.progress, job.loss)
+              for job_id, job in scenario_jobs.items()
+              })
 
         run_scores = {"run": run_number}
         for scenario_name, scenario_jobs in SCENARIOS.items():

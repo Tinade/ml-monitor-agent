@@ -159,15 +159,8 @@ async def main():
         print(f"RUN {run_number} OF 5")
         print(f"{'='*50}")
 
-        # Reset JOBS to original state before each run
-        tools.JOBS.clear()
-        tools.JOBS.update({
-              job_id: Job(job.job_id, job.status, job.progress, job.loss)
-              for job_id, job in scenario_jobs.items()
-              })
-
         run_scores = {"run": run_number}
-        for scenario_name, scenario_jobs in SCENARIOS.items():
+        for scenario_name, scenario_jobs in get_scenarios().items():
             scores = await run_scenario(scenario_name, scenario_jobs)
             avg = sum(s["score"] for s in scores) / len(scores) if scores else 0
             run_scores[scenario_name] = round(avg, 1)
@@ -184,3 +177,5 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
+

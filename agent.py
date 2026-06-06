@@ -152,20 +152,28 @@ If no history exists yet, say "no history found, restarting as default action." 
     return scores
 
 async def main():
-    all_scores = {}
+    all_runs = []
 
-    for scenario_name, scenario_jobs in SCENARIOS.items():
-        scores = await run_scenario(scenario_name, scenario_jobs)
-        all_scores[scenario_name] = scores
+    for run_number in range(1, 6):
+        print(f"\n{'='*50}")
+        print(f"RUN {run_number} OF 5")
+        print(f"{'='*50}")
 
-    # --- Print Comparison Table ---
+        run_scores = {"run": run_number}
+        for scenario_name, scenario_jobs in SCENARIOS.items():
+            scores = await run_scenario(scenario_name, scenario_jobs)
+            avg = sum(s["score"] for s in scores) / len(scores) if scores else 0
+            run_scores[scenario_name] = round(avg, 1)
+
+        all_runs.append(run_scores)
+
+    # Print progression table
     print(f"\n{'='*50}")
-    print("RESULTS ACROSS ALL SCENARIOS")
-    print(f"{'='*50}\n")
-
-    for scenario_name, scores in all_scores.items():
-        avg = sum(s['score'] for s in scores) / len(scores)
-        print(f"{scenario_name}: avg score = {avg:.1f}/10")
+    print("SCORE PROGRESSION ACROSS 5 RUNS")
+    print(f"{'='*50}")
+    print(f"{'Run':<6} {'Baseline':<12} {'Harder':<12} {'Complex':<12}")
+    for r in all_runs:
+        print(f"{r['run']:<6} {r['Baseline']:<12} {r['Harder']:<12} {r['Complex']:<12}")
 
 if __name__ == "__main__":
     asyncio.run(main())

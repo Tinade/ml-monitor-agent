@@ -177,6 +177,7 @@ async def main():
     for r in all_runs:
         print(f"{r['run']:<6} {r['Baseline']:<12} {r['Harder']:<12} {r['Complex']:<12}")
 
+
 if __name__ == "__main__":
     asyncio.run(main())
 

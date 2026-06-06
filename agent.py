@@ -12,7 +12,9 @@ from google.adk.sessions import InMemorySessionService
 from google.genai.types import Content, Part
 from tools import JOBS, SCENARIOS, check_job_status, restart_job
 import tools
-from models import Job# --- Decision History ---
+from models import Job
+from tools import JOBS, check_job_status, restart_job, get_scenarios
+# --- Decision History ---
 DECISION_HISTORY = []
 
 # --- Phoenix Tracing Setup ---

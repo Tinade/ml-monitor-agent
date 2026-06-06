@@ -1,5 +1,6 @@
 import os
 import asyncio
+from tools import SCENARIOS
 from evaluator import evaluate_decision
 from phoenix.otel import register
 from openinference.instrumentation.google_adk import GoogleADKInstrumentor
@@ -158,6 +159,14 @@ async def main():
         print(f"\n{'='*50}")
         print(f"RUN {run_number} OF 5")
         print(f"{'='*50}")
+
+        # Reset JOBS to original state before each run
+        tools.JOBS.clear()
+        tools.JOBS.update({
+            "job_001": Job("job_001", "running", 45, 0.82),
+            "job_002": Job("job_002", "stalled", 12, 0.99),
+            "job_003": Job("job_003", "failed",  0,  None),
+        })
 
         run_scores = {"run": run_number}
         for scenario_name, scenario_jobs in SCENARIOS.items():

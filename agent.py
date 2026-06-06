@@ -1,6 +1,5 @@
 import os
 import asyncio
-from tools import SCENARIOS
 from evaluator import evaluate_decision
 from phoenix.otel import register
 from openinference.instrumentation.google_adk import GoogleADKInstrumentor
@@ -10,10 +9,11 @@ from google.adk.agents import Agent
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
 from google.genai.types import Content, Part
-from tools import JOBS, SCENARIOS, check_job_status, restart_job
+from tools import JOBS, check_job_status, restart_job
 import tools
 from models import Job
 from tools import JOBS, check_job_status, restart_job, get_scenarios
+
 # --- Decision History ---
 DECISION_HISTORY = []
 

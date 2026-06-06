@@ -40,4 +40,4 @@ threading, and retry logic.
 
 ## Hackathon
 
-Submitted to Google Cloud Rapid Agent Hackathon 2026 — Arize track.
+Submitted to Google Cloud Rapid Agent Hackathon 2026   Arize track.

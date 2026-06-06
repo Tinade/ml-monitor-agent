@@ -1,28 +1,28 @@
 from models import Job
 from opentelemetry import trace
-JOBS = {
-    "job_001": Job("job_001", "running", 45, 0.82),
-    "job_002": Job("job_002", "stalled", 12, 0.99),
-    "job_003": Job("job_003", "failed", 0, None),
-}
 
-SCENARIOS = {
-    "Baseline": {
-        "job_001": Job("job_001", "running", 45, 0.82),
-        "job_002": Job("job_002", "stalled", 12, 0.99),
-        "job_003": Job("job_003", "failed",  0,  None),
-    },
-    "Harder": {
-        "job_001": Job("job_001", "stalled", 30, 0.95),
-        "job_002": Job("job_002", "failed",  0,  None),
-        "job_003": Job("job_003", "failed",  0,  None),
-    },
-    "Complex": {
-        "job_001": Job("job_001", "failed",  0,  None),
-        "job_002": Job("job_002", "failed",  0,  None),
-        "job_003": Job("job_003", "stalled", 5,  0.98),
-    },
-}
+def get_scenarios():
+    return {
+        "Baseline": {
+            "job_001": Job("job_001", "running", 45, 0.82),
+            "job_002": Job("job_002", "stalled", 12, 0.99),
+            "job_003": Job("job_003", "failed",  0,  None),
+        },
+        "Harder": {
+            "job_001": Job("job_001", "stalled", 30, 0.95),
+            "job_002": Job("job_002", "failed",  0,  None),
+            "job_003": Job("job_003", "failed",  0,  None),
+        },
+        "Complex": {
+            "job_001": Job("job_001", "failed",  0,  None),
+            "job_002": Job("job_002", "failed",  0,  None),
+            "job_003": Job("job_003", "stalled", 5,  0.98),
+        },
+    }
+
+# Initialize JOBS from Baseline scenario
+JOBS = get_scenarios()["Baseline"]
+
 def check_job_status(job_id: str) -> dict:
     """Check the current status of an ML training job."""
     tracer = trace.get_tracer(__name__)
@@ -32,7 +32,6 @@ def check_job_status(job_id: str) -> dict:
         if not job:
             span.set_attribute("error", "job_not_found")
             return {"error": f"Job {job_id} not found"}
-        
         span.set_attribute("status", job.status)
         span.set_attribute("progress", job.progress)
         span.set_attribute("at_risk", job.is_at_risk())

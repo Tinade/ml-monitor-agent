@@ -36,6 +36,10 @@ async def dashboard():
     with open(os.path.join(BASE_DIR, "web", "dashboard.html")) as f:
         return f.read()
 
+@app.get("/clear")
+async def clear():
+    DECISION_HISTORY.clear()
+    return {"status": "history cleared"}
 
 @app.get("/status/{job_id}")
 async def status(job_id: str):

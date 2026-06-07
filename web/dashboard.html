@@ -223,7 +223,10 @@
 
     <button class="run-btn" id="run-btn" onclick="runAgent()">▶ Run Agent Now</button>
     <div class="status-msg" id="status-msg"></div>
-
+    <button class="run-btn" id="run-btn" onclick="runAgent()">▶ Run Agent Now</button>
+    <button onclick="clearHistory()"
+        style="background:#333; color:#aaa; border:none; padding:12px 20px; border-radius:25px; font-size:0.9em; cursor:pointer; margin-left:10px;">Clear
+        History</button>
     <div class="section">
         <h2>Job Status</h2>
         <div class="job-grid">
@@ -384,7 +387,14 @@
         });
 
         let runCount = 0;
-
+        async function clearHistory() {
+            await fetch('/clear');
+            document.getElementById('reasoning-log').innerHTML = 'History cleared. Run the agent to start fresh.';
+            progressionChart.data.labels = [];
+            progressionChart.data.datasets.forEach(d => d.data = []);
+            progressionChart.update();
+            runCount = 0;
+        }
         async function runAgent() {
             const btn = document.getElementById('run-btn');
             const msg = document.getElementById('status-msg');

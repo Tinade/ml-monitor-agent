@@ -73,8 +73,13 @@ agent = Agent(
 async def run_scenario(scenario_name: str, scenario_jobs: dict) -> list:
     """Run the agent on a specific scenario and return evaluation scores."""
 
+    # Always create fresh Job objects to prevent mutation carry-over
+    fresh_jobs = {
+        job_id: Job(job.job_id, job.status, job.progress, job.loss)
+        for job_id, job in scenario_jobs.items()
+    }
     tools.JOBS.clear()
-    tools.JOBS.update(scenario_jobs)
+    tools.JOBS.update(fresh_jobs)
 
     print(f"\n{'='*50}")
     print(f"SCENARIO: {scenario_name}")

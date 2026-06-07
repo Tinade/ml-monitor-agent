@@ -7,46 +7,219 @@
     <title>ML Monitor Agent Dashboard</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', sans-serif; background: #0f1117; color: #e0e0e0; padding: 20px; }
-        h1 { color: #00d4ff; margin-bottom: 5px; font-size: 2em; }
-        .subtitle { color: #888; margin-bottom: 15px; }
-        .section { margin-bottom: 30px; }
-        .section h2 { color: #00d4ff; border-bottom: 1px solid #333; padding-bottom: 8px; margin-bottom: 15px; }
-        .job-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; }
-        .job-card { background: #1a1d2e; border-radius: 10px; padding: 20px; border-left: 4px solid #333; }
-        .job-card.running { border-left-color: #00ff88; }
-        .job-card.stalled { border-left-color: #ffaa00; }
-        .job-card.failed { border-left-color: #ff4444; }
-        .job-card.restarted { border-left-color: #00d4ff; }
-        .job-id { font-size: 1.2em; font-weight: bold; margin-bottom: 10px; }
-        .job-status { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.85em; margin-bottom: 10px; }
-        .status-running { background: #00ff8822; color: #00ff88; }
-        .status-stalled { background: #ffaa0022; color: #ffaa00; }
-        .status-failed { background: #ff444422; color: #ff4444; }
-        .status-restarted { background: #00d4ff22; color: #00d4ff; }
-        .job-metrics { font-size: 0.9em; color: #aaa; }
-        .job-metrics span { display: block; margin-bottom: 4px; }
-        .at-risk { color: #ffaa00; font-weight: bold; margin-top: 8px; }
-        .scenario-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
-        .scenario-card { background: #1a1d2e; border-radius: 10px; padding: 20px; }
-        .scenario-name { font-weight: bold; margin-bottom: 10px; color: #00d4ff; }
-        .score-bar { background: #333; border-radius: 5px; height: 8px; margin: 5px 0; overflow: hidden; }
-        .score-fill { height: 100%; border-radius: 5px; background: linear-gradient(90deg, #00d4ff, #00ff88); transition: width 1s; }
-        .score-value { font-size: 1.4em; font-weight: bold; color: #00ff88; }
-        .footer { margin-top: 40px; color: #555; font-size: 0.85em; text-align: center; }
-        .live-badge { display: inline-block; background: #00ff8822; color: #00ff88; padding: 3px 10px; border-radius: 20px; font-size: 0.8em; margin-left: 10px; }
-        .run-btn { background: linear-gradient(90deg, #00d4ff, #00ff88); color: #0f1117; border: none; padding: 12px 30px; border-radius: 25px; font-size: 1em; font-weight: bold; cursor: pointer; margin-bottom: 10px; margin-top: 10px; }
-        .run-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-        .status-msg { color: #888; margin-bottom: 20px; font-size: 0.9em; }
-        .chart-box { background: #1a1d2e; border-radius: 10px; padding: 20px; margin-top: 20px; }
-        .chart-title { font-weight: bold; color: #00d4ff; margin-bottom: 15px; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #0f1117;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #00d4ff;
+            margin-bottom: 5px;
+            font-size: 2em;
+        }
+
+        .subtitle {
+            color: #888;
+            margin-bottom: 15px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section h2 {
+            color: #00d4ff;
+            border-bottom: 1px solid #333;
+            padding-bottom: 8px;
+            margin-bottom: 15px;
+        }
+
+        .job-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        .job-card {
+            background: #1a1d2e;
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 4px solid #333;
+        }
+
+        .job-card.running {
+            border-left-color: #00ff88;
+        }
+
+        .job-card.stalled {
+            border-left-color: #ffaa00;
+        }
+
+        .job-card.failed {
+            border-left-color: #ff4444;
+        }
+
+        .job-card.restarted {
+            border-left-color: #00d4ff;
+        }
+
+        .job-id {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .job-status {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            margin-bottom: 10px;
+        }
+
+        .status-running {
+            background: #00ff8822;
+            color: #00ff88;
+        }
+
+        .status-stalled {
+            background: #ffaa0022;
+            color: #ffaa00;
+        }
+
+        .status-failed {
+            background: #ff444422;
+            color: #ff4444;
+        }
+
+        .status-restarted {
+            background: #00d4ff22;
+            color: #00d4ff;
+        }
+
+        .job-metrics {
+            font-size: 0.9em;
+            color: #aaa;
+        }
+
+        .job-metrics span {
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .at-risk {
+            color: #ffaa00;
+            font-weight: bold;
+            margin-top: 8px;
+        }
+
+        .scenario-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .scenario-card {
+            background: #1a1d2e;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .scenario-name {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #00d4ff;
+        }
+
+        .score-bar {
+            background: #333;
+            border-radius: 5px;
+            height: 8px;
+            margin: 5px 0;
+            overflow: hidden;
+        }
+
+        .score-fill {
+            height: 100%;
+            border-radius: 5px;
+            background: linear-gradient(90deg, #00d4ff, #00ff88);
+            transition: width 1s;
+        }
+
+        .score-value {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #00ff88;
+        }
+
+        .footer {
+            margin-top: 40px;
+            color: #555;
+            font-size: 0.85em;
+            text-align: center;
+        }
+
+        .live-badge {
+            display: inline-block;
+            background: #00ff8822;
+            color: #00ff88;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            margin-left: 10px;
+        }
+
+        .run-btn {
+            background: linear-gradient(90deg, #00d4ff, #00ff88);
+            color: #0f1117;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 10px;
+            margin-top: 10px;
+        }
+
+        .run-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .status-msg {
+            color: #888;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+        }
+
+        .chart-box {
+            background: #1a1d2e;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .chart-title {
+            font-weight: bold;
+            color: #00d4ff;
+            margin-bottom: 15px;
+        }
     </style>
 </head>
 
 <body>
     <h1>ML Monitor Agent <span class="live-badge">● LIVE</span></h1>
-    <p class="subtitle">Self-Healing ML Infrastructure — autonomous monitoring, anomaly detection, and self-improvement · Powered by Google ADK + Arize Phoenix</p>
+    <p class="subtitle">Self-Healing ML Infrastructure — autonomous monitoring, anomaly detection, and self-improvement
+        · Powered by Google ADK + Arize Phoenix</p>
 
     <button class="run-btn" id="run-btn" onclick="runAgent()">▶ Run Agent Now</button>
     <div class="status-msg" id="status-msg"></div>
@@ -62,8 +235,8 @@
                     <span>Loss: 0.82</span>
                 </div>
 
-		<div style="margin-top:10px; font-size:0.9em;">
-                  Health: <strong style="color:#00ff88;">100/100</strong>
+                <div style="margin-top:10px; font-size:0.9em;">
+                    Health: <strong style="color:#00ff88;">100/100</strong>
                 </div>
             </div>
             <div class="job-card stalled">
@@ -75,7 +248,7 @@
                 </div>
                 <div class="at-risk">AT RISK — high loss, low progress</div>
                 <div style="margin-top:10px; font-size:0.9em;">
-                     Health: <strong style="color:#ff4444;">20/100</strong>
+                    Health: <strong style="color:#ff4444;">20/100</strong>
                 </div>
 
             </div>
@@ -86,9 +259,9 @@
                     <span>Progress: 0%</span>
                     <span>Loss: N/A</span>
                 </div>
-                 <div style="margin-top:10px; font-size:0.9em;">
-                  Health: <strong style="color:#ffaa00;">40/100</strong>
-                 </div>
+                <div style="margin-top:10px; font-size:0.9em;">
+                    Health: <strong style="color:#ffaa00;">40/100</strong>
+                </div>
 
             </div>
         </div>
@@ -100,19 +273,25 @@
             <div class="scenario-card" id="scenario-baseline">
                 <div class="scenario-name">Baseline</div>
                 <div class="score-value">9.0/10</div>
-                <div class="score-bar"><div class="score-fill" style="width: 90%"></div></div>
+                <div class="score-bar">
+                    <div class="score-fill" style="width: 90%"></div>
+                </div>
                 <div style="font-size:0.85em; color:#aaa; margin-top:8px;">All jobs monitored correctly</div>
             </div>
             <div class="scenario-card" id="scenario-harder">
                 <div class="scenario-name">Harder</div>
                 <div class="score-value">9.3/10</div>
-                <div class="score-bar"><div class="score-fill" style="width: 93%"></div></div>
+                <div class="score-bar">
+                    <div class="score-fill" style="width: 93%"></div>
+                </div>
                 <div style="font-size:0.85em; color:#aaa; margin-top:8px;">Agent learned from Baseline history</div>
             </div>
             <div class="scenario-card" id="scenario-complex">
                 <div class="scenario-name">Complex</div>
                 <div class="score-value">9.0/10</div>
-                <div class="score-bar"><div class="score-fill" style="width: 90%"></div></div>
+                <div class="score-bar">
+                    <div class="score-fill" style="width: 90%"></div>
+                </div>
                 <div style="font-size:0.85em; color:#aaa; margin-top:8px;">Anomaly detection flagged at-risk jobs</div>
             </div>
         </div>
@@ -126,9 +305,12 @@
     <div class="section">
         <h2>How It Works</h2>
         <div style="background:#1a1d2e; border-radius:10px; padding:20px; line-height:1.8;">
-            <p>1. <strong style="color:#00d4ff">Monitor</strong> — Agent checks all ML training jobs using check_job_status()</p>
-            <p>2. <strong style="color:#00d4ff">Detect</strong> — Anomaly detection flags jobs with high loss + low progress</p>
-            <p>3. <strong style="color:#00d4ff">Learn</strong> — Agent reads past decisions from history before acting</p>
+            <p>1. <strong style="color:#00d4ff">Monitor</strong> — Agent checks all ML training jobs using
+                check_job_status()</p>
+            <p>2. <strong style="color:#00d4ff">Detect</strong> — Anomaly detection flags jobs with high loss + low
+                progress</p>
+            <p>3. <strong style="color:#00d4ff">Learn</strong> — Agent reads past decisions from history before acting
+            </p>
             <p>4. <strong style="color:#00d4ff">Act</strong> — Restarts failed/stalled jobs with justified reasoning</p>
             <p>5. <strong style="color:#00d4ff">Evaluate</strong> — LLM-as-Judge scores every decision 1-10</p>
             <p>6. <strong style="color:#00d4ff">Improve</strong> — Scores improve across scenarios as agent learns</p>
@@ -216,8 +398,8 @@
                 const scenarios = ['Baseline', 'Harder', 'Complex'];
 
                 scenarios.forEach(name => {
-                    if (results[name] && results[name].length > 0) {
-                        const scores = results[name];
+                    if (results[name] && results[name].scores && results[name].scores.length > 0) {
+                        const scores = results[name].scores;
                         const avg = scores.reduce((a, b) => a + b.score, 0) / scores.length;
                         const card = document.getElementById('scenario-' + name.toLowerCase());
                         if (card) {
@@ -258,4 +440,5 @@
         }
     </script>
 </body>
+
 </html>

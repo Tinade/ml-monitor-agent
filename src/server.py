@@ -48,9 +48,12 @@ async def status(job_id: str):
 async def run():
     all_scores = {}
     for scenario_name, scenario_jobs in get_scenarios().items():
-        scores = await run_scenario(scenario_name, scenario_jobs)
-        all_scores[scenario_name] = [
+        scores, agent_response = await run_scenario(scenario_name, scenario_jobs)
+        all_scores[scenario_name] = {
+        "scores": [
             {"job_id": s["job_id"], "score": s["score"], "correct": s["correct"]}
             for s in scores
-        ] if scores else []
+        ] if scores else [],
+        "agent_response": agent_response
+        }
     return {"results": all_scores}

@@ -110,6 +110,7 @@ async def run_scenario(scenario_name: str, scenario_jobs: dict) -> list:
 
 If no history exists yet, say "no history found, restarting as default action." """)]
     )
+    agent_response = ""
     try:
         async for event in runner.run_async(
             user_id="engineer-1",
@@ -120,6 +121,7 @@ If no history exists yet, say "no history found, restarting as default action." 
                 if hasattr(event, 'content') and event.content:
                     for part in event.content.parts:
                         if hasattr(part, 'text') and part.text:
+                            agent_response = part.text
                             print("Agent:", part.text)
     except Exception as e:
         print(f"Agent run failed for {scenario_name}: {str(e)}")
@@ -151,7 +153,7 @@ If no history exists yet, say "no history found, restarting as default action." 
         except Exception as e:
             print(f"Evaluation failed for {job_id}: {str(e)}")
 
-    return scores
+    return scores, agent_response
 
 async def main():
     all_runs = []
@@ -163,7 +165,7 @@ async def main():
 
         run_scores = {"run": run_number}
         for scenario_name, scenario_jobs in get_scenarios().items():
-            scores = await run_scenario(scenario_name, scenario_jobs)
+            scores, _ = await run_scenario(scenario_name, scenario_jobs)
             avg = sum(s["score"] for s in scores) / len(scores) if scores else 0
             run_scores[scenario_name] = round(avg, 1)
 

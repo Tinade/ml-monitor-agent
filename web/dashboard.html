@@ -301,7 +301,13 @@
             <canvas id="progressionChart" height="100"></canvas>
         </div>
     </div>
-
+    <div class="section">
+        <h2>Agent Reasoning Log</h2>
+        <div id="reasoning-log"
+            style="background:#1a1d2e; border-radius:10px; padding:20px; line-height:1.8; color:#aaa; font-size:0.9em;">
+            Run the agent to see its reasoning here.
+        </div>
+    </div>
     <div class="section">
         <h2>How It Works</h2>
         <div style="background:#1a1d2e; border-radius:10px; padding:20px; line-height:1.8;">
@@ -315,6 +321,7 @@
             <p>5. <strong style="color:#00d4ff">Evaluate</strong> — LLM-as-Judge scores every decision 1-10</p>
             <p>6. <strong style="color:#00d4ff">Improve</strong> — Scores improve across scenarios as agent learns</p>
         </div>
+
     </div>
 
     <div class="footer">
@@ -413,9 +420,9 @@
                 runCount++;
                 progressionChart.data.labels.push('Run ' + runCount);
 
-                const baseline = results['Baseline'];
-                const harder = results['Harder'];
-                const complex = results['Complex'];
+                const baseline = results['Baseline'] ? results['Baseline'].scores : [];
+                const harder = results['Harder'] ? results['Harder'].scores : [];
+                const complex = results['Complex'] ? results['Complex'].scores : [];
 
                 if (baseline && baseline.length > 0)
                     progressionChart.data.datasets[0].data.push(
@@ -431,6 +438,17 @@
                     );
 
                 progressionChart.update();
+                // Update reasoning log
+                const log = document.getElementById('reasoning-log');
+                let logContent = '';
+                ['Baseline', 'Harder', 'Complex'].forEach(name => {
+                    if (results[name] && results[name].agent_response) {
+                        logContent += `<strong style="color:#00d4ff">${name}:</strong><br>`;
+                        logContent += results[name].agent_response.replace(/\n/g, '<br>');
+                        logContent += '<br><br>';
+                    }
+                });
+                log.innerHTML = logContent || 'No reasoning available.';
 
             } catch (e) {
                 btn.textContent = 'Run Agent Now';

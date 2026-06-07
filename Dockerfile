@@ -10,18 +10,13 @@ RUN apt-get update && apt-get install -y nodejs npm && rm -rf /var/lib/apt/lists
 # Copy requirements and install
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install uvicorn
+
+# Pre-install Phoenix MCP
+RUN npx -y @arizeai/phoenix-mcp@latest --version || true
 
 # Copy all project files
 COPY . .
 
-# Run 
-# Pre-install Phoenix MCP
-RUN npx -y @arizeai/phoenix-mcp@latest --version || true
-
-# Run the agent
-CMD ["python", "agent.py"]
-# Install uvicorn for FastAPI
-RUN pip install uvicorn
-
-# Run the server
-CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8080"]
+# Run the server from src directory
+CMD ["uvicorn", "src.server:app", "--host", "0.0.0.0", "--port", "8080"]

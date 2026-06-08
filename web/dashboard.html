@@ -402,6 +402,19 @@
             btn.disabled = true;
             btn.textContent = 'Agent is running...';
             msg.textContent = 'Agent is checking jobs, reading history, evaluating decisions... (2-3 minutes)';
+            btn.disabled = true;
+            btn.textContent = 'Agent is running...';
+            msg.textContent = 'Agent is checking jobs, reading history, evaluating decisions... (2-3 minutes)';
+
+            // ADD THIS RIGHT HERE
+            document.getElementById('reasoning-log').innerHTML = `
+                <strong style="color:#00d4ff">Baseline:</strong><br>
+                Agent is reading history and checking job statuses...<br><br>
+                <strong style="color:#00d4ff">Harder:</strong><br>
+                Waiting for Baseline to complete...<br><br>
+                <strong style="color:#00d4ff">Complex:</strong><br>
+                Waiting for Harder to complete...<br><br>
+            `;
 
             try {
                 const response = await fetch('/run', { signal: AbortSignal.timeout(300000) });

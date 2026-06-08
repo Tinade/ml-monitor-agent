@@ -14,6 +14,7 @@ import tools
 from models import Job
 from tools import JOBS, check_job_status, restart_job, get_scenarios
 from phoenix_history import get_job_history
+
 # --- Decision History ---
 DECISION_HISTORY = []
 

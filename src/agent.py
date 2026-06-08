@@ -13,7 +13,7 @@ from tools import JOBS, check_job_status, restart_job
 import tools
 from models import Job
 from tools import JOBS, check_job_status, restart_job, get_scenarios
-
+from phoenix_history import get_job_history
 # --- Decision History ---
 DECISION_HISTORY = []
 
@@ -89,9 +89,19 @@ async def run_scenario(scenario_name: str, scenario_jobs: dict) -> list:
     original_states = {job_id: job.to_dict() for job_id, job in tools.JOBS.items()}
 
     # Build history summary
+    
     history_summary = ""
+
+    # Query real Phoenix traces
+    phoenix_traces = ""
+    for job_id in ["job_001", "job_002", "job_003"]:
+        trace_data = get_job_history(job_id)
+        phoenix_traces += f"\n{trace_data}"
+
+    history_summary = f"\n\nPHOENIX TRACE HISTORY (real observability data):\n{phoenix_traces}"
+
     if DECISION_HISTORY:
-        history_summary = "\n\nPAST DECISION HISTORY:\n"
+        history_summary += "\n\nSESSION DECISION HISTORY:\n"
         for d in DECISION_HISTORY:
             history_summary += f"- {d['scenario']}: {d['job_id']} was {d['original_status']} → {d['action']} → score {d['score']}/10 correct={d['correct']}\n"
 

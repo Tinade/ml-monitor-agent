@@ -1,6 +1,6 @@
 # ML Monitor Agent Self-Healing ML Infrastructure
 
-> ML training jobs fail silently at 3am. On-call engineers get paged to check logs, restart jobs, and document decisions — work that should be automated. This agent does all of that autonomously, learns from every decision, and gets smarter every run.
+> ML training jobs fail silently at 3am. On-call engineers get paged to check logs, restart jobs, and document decisions  work that should be automated. This agent does all of that autonomously, learns from every decision, and gets smarter every run.
 
 ## Live Demo
 

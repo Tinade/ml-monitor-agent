@@ -11,6 +11,16 @@ Click **Run Agent Now** to watch the agent monitor jobs, detect anomalies, read 
 **[View Live Phoenix Traces](https://app.phoenix.arize.com/s/tsiged87/projects/UHJvamVjdDoz/traces)**
 
 ---
+## Screenshots
+
+### Dashboard — Job Health Scores and Scenario Results
+![Dashboard](docs/screenshot-dashboard.png)
+
+### Agent Reasoning Log — Real Phoenix Trace History
+![Reasoning Log](docs/screenshot-reasoning.png)
+
+### Score Progression Chart — Agent Learning Across Runs
+![Score Chart](docs/screenshot-chart.png)
 
 ## What It Does
 

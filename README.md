@@ -1,6 +1,6 @@
-# ML Monitor Agent — Self-Healing ML Infrastructure
+# ML Monitor Agent Self-Healing ML Infrastructure
 
-> ML training jobs fail silently at 3am. On-call engineers get paged to check logs, restart jobs, and document decisions — work that should be automated. This agent does all of that autonomously, learns from every decision, and gets smarter every run.
+> ML training jobs fail silently at 3am. On-call engineers get paged to check logs, restart jobs, and document decisions  work that should be automated. This agent does all of that autonomously, learns from every decision, and gets smarter every run.
 
 ## Live Demo
 
@@ -11,6 +11,16 @@ Click **Run Agent Now** to watch the agent monitor jobs, detect anomalies, read 
 **[View Live Phoenix Traces](https://app.phoenix.arize.com/s/tsiged87/projects/UHJvamVjdDoz/traces)**
 
 ---
+## Screenshots
+
+### Dashboard  Job Health Scores and Scenario Results
+![Dashboard](docs/screenshot-dashboard.png)
+
+### Agent Reasoning Log  Real Phoenix Trace History
+![Reasoning Log](docs/screenshot-reasoning.png)
+
+### Score Progression Chart  Agent Learning Across Runs
+![Score Chart](docs/screenshot-chart.png)
 
 ## What It Does
 

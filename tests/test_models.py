@@ -1,5 +1,4 @@
-from models import Job
-import tools
+from src.models import Job
 def test_is_healthy_when_running():
     job = Job("job_001", "running", 45, 0.82)
     assert job.is_healthy() == True
@@ -50,3 +49,14 @@ def test_is_at_risk_when_healthy():
 def test_is_at_risk_when_loss_is_none():
     job = Job("job_003", "failed", 0, None)
     assert job.is_at_risk() == False
+def test_health_score_healthy():
+    job = Job("job_001", "running", 45, 0.82)
+    assert job.health_score() == 100
+
+def test_health_score_stalled_at_risk():
+    job = Job("job_002", "stalled", 12, 0.99)
+    assert job.health_score() == 20
+
+def test_health_score_failed():
+    job = Job("job_003", "failed", 0, None)
+    assert job.health_score() == 40

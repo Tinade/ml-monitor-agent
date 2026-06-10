@@ -38,6 +38,7 @@ def check_job_status(job_id: str) -> dict:
         try:
             result = job.to_dict()
             result["at_risk"] = job.is_at_risk()
+            result["health_score"] = job.health_score()
             return result
         except Exception as e:
             return {"error": f"Failed to read job {job_id}: {str(e)}"}

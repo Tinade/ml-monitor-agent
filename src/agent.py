@@ -58,15 +58,29 @@ agent = Agent(
 
     If the job is stalled or failed:
 
-        - If history shows restart attempts were successful:
-            restart the job and explain why
+        - If history shows restarting worked before:
+            restart and explain that history supports the action
 
-        - If history shows multiple restart attempts failed:
-            do NOT restart
-            recommend escalation to an engineer
+        - If history explicitly shows:
+            success=False multiple times,
+            restart failed,
+            or escalation recommended:
+            do not restart and recommend escalation to an engineer
 
-        - If no history exists:
-            restart as the default action
+        - If history is missing, incomplete, or ambiguous:
+            restart as the default remediation action
+
+    IMPORTANT:
+    Lack of evidence is NOT evidence of failure.
+
+    Do not assume a restart failed simply because multiple restart
+    actions exist in the history.
+
+    Only treat a restart as unsuccessful if the history explicitly
+    contains:
+        - success=False
+        - restart failed
+        - escalation recommended
 
     If the job is running BUT at_risk is True:
 
@@ -83,7 +97,8 @@ agent = Agent(
     Always state:
     - What history you found in Phoenix
     - What the current status is
-    - What action you took and why""",
+    - What action you took
+    - Why you took that action""",
     tools=[check_job_status, restart_job, phoenix_mcp],
 )
 

@@ -170,7 +170,20 @@ If no history exists yet, say "no history found, restarting as default action." 
     for job_id, job in tools.JOBS.items():
         original = original_states[job_id]
         action = "restart_job" if job.status == "restarted" else "do_nothing"
-        outcome = {"success": True}
+        success = False
+
+        if original["status"] in ["failed", "stalled"] and action == "restart_job":
+            success = True
+
+        if original["status"] == "running" and action == "do_nothing":
+            success = True
+
+        if original["status"] == "failed" and action == "do_nothing":
+            success = False
+
+        outcome = {
+            "success": success
+        }
         try:
             evaluation = evaluate_decision(
                 job_id=job_id,

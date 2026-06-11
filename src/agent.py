@@ -181,23 +181,13 @@ If no history exists yet, say "no history found, restarting as default action." 
 
         success = False
 
-        # job_003 is our escalation scenario
-        if job_id == "job_003":
+        if original["status"] in ["failed", "stalled"]:
 
-            if action == "do_nothing":
-                success = True
+            success = (action == "restart_job")
 
-        # normal restart behavior
-        elif original["status"] in ["failed", "stalled"]:
-
-            if action == "restart_job":
-                success = True
-
-        # healthy running jobs should be left alone
         elif original["status"] == "running":
 
-            if action == "do_nothing":
-                success = True
+            success = (action == "do_nothing")
 
         outcome = {
             "success": success
@@ -221,12 +211,13 @@ If no history exists yet, say "no history found, restarting as default action." 
             scores.append(evaluation)
 
             DECISION_HISTORY.append({
-                "scenario": scenario_name,
-                "job_id": job_id,
-                "original_status": original["status"],
-                "action": action,
-                "score": evaluation["score"],
-                "correct": evaluation["correct"]
+            "scenario": scenario_name,
+            "job_id": job_id,
+            "original_status": original["status"],
+            "action": action,
+            "score": evaluation["score"],
+            "correct": evaluation["correct"],
+            "success": success
             })
 
             print(

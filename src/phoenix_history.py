@@ -37,7 +37,13 @@ def get_job_history(job_id: str, decision_history: list = None) -> str:
         if job_decisions:
             summary += f"\nSession decision history for {job_id}:\n"
             for d in job_decisions[-3:]:
-                summary += f"- {d['scenario']}: {job_id} was {d['original_status']} → {d['action']} → score {d['score']}/10 correct={d['correct']}\n"
+                summary += (
+                f"- {d['scenario']}: "
+                f"status={d['original_status']}, "
+                f"action={d['action']}, "
+                f"success={d['success']}, "
+                f"score={d['score']}/10\n"
+            )
 
     return summary
 

@@ -169,21 +169,27 @@ If no history exists yet, say "no history found, restarting as default action." 
     print(f"\n--- Evaluating {scenario_name} ---\n")
     for job_id, job in tools.JOBS.items():
         original = original_states[job_id]
-        action = "restart_job" if job.status == "restarted" else "do_nothing"
-        success = False
+    action = "restart_job" if job.status == "restarted" else "do_nothing"
 
-        if original["status"] in ["failed", "stalled"] and action == "restart_job":
+    success = False
+
+    # job_003 is our escalation scenario
+    if job_id == "job_003":
+
+        if action == "do_nothing":
             success = True
 
-        if original["status"] == "running" and action == "do_nothing":
+    # normal restart behavior
+    elif original["status"] in ["failed", "stalled"]:
+
+        if action == "restart_job":
             success = True
 
-        if original["status"] == "failed" and action == "do_nothing":
-            success = False
+    # healthy running jobs should be left alone
+    elif original["status"] == "running":
 
-        outcome = {
-            "success": success
-        }
+        if action == "do_nothing":
+            success = True
         try:
             evaluation = evaluate_decision(
                 job_id=job_id,

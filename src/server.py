@@ -47,7 +47,33 @@ async def status(job_id: str):
     if not result:
         return {"status": "not_found"}
     return result
+@app.get("/compare")
+async def compare():
 
+    scenario = get_scenarios()["Complex"]
+
+    no_history_scores, no_history_response = await run_scenario(
+        "Complex",
+        scenario,
+        use_history=False
+    )
+
+    history_scores, history_response = await run_scenario(
+        "Complex",
+        scenario,
+        use_history=True
+    )
+
+    return {
+        "without_history": {
+            "response": no_history_response,
+            "scores": no_history_scores
+        },
+        "with_history": {
+            "response": history_response,
+            "scores": history_scores
+        }
+    }
 @app.get("/run")
 async def run():
     all_scores = {}

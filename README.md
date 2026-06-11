@@ -1,6 +1,11 @@
 # A Self-Healing AI Agent for Autonomous ML Infrastructure
 
-> ML training jobs fail silently at 3am. On-call engineers get paged to check logs, restart jobs, and document decisions  work that should be automated. This agent does all of that autonomously, learns from every decision, and gets smarter every run.
+> ML training failures can waste thousands of dollars in GPU compute and delay critical model releases. Today, on-call engineers are often paged at 3 a.m. to manually inspect logs, determine whether a job should be restarted, and document corrective actions—work that is repetitive, time-consuming, and difficult to scale.
+
+> ML Monitor Agent autonomously monitors ML training jobs, detects failures before they become outages, learns from previous incidents using Arize Phoenix observability data, and takes corrective actions with transparent reasoning.
+
+> Unlike traditional monitoring systems that only generate alerts, ML Monitor Agent acts as an autonomous on-call engineer. It analyzes job health, reviews historical outcomes, decides whether intervention is needed, explains its reasoning, and continuously improves future decisions using trace history, prior actions, and LLM-based evaluation.
+
 
 ## Live Demo
 

@@ -1,4 +1,4 @@
-# A Self-Healing AI Agent for Autonomous ML Infrastructure
+# ML Monitor Agent: An Autonomous On-Call Engineer for Self-Healing ML Infrastructure
 
 > ML training failures can waste thousands of dollars in GPU compute and delay critical model releases. Today, on-call engineers are often paged at 3 a.m. to manually inspect logs, determine whether a job should be restarted, and document corrective actions work that is repetitive, time-consuming, and difficult to scale.
 
@@ -51,6 +51,23 @@ Current monitoring systems generate alerts but still require engineers to:
 
 ML Monitor Agent automates this workflow end-to-end.
 
+## Why Arize Phoenix Matters
+
+Most monitoring systems stop at alerting.
+
+ML Monitor Agent uses Arize Phoenix as operational memory.
+
+Before taking action, the agent retrieves Phoenix trace history and uses historical outcomes as evidence during decision making.
+
+This allows the agent to:
+
+- Learn from previous incidents
+- Compare successful and unsuccessful interventions
+- Justify actions using trace-backed reasoning
+- Improve future decisions using real observability data
+
+Without Phoenix history the agent averages 6.3/10.
+With Phoenix history the agent averages 9.0/10 (+43% improvement).
 ## Self-Improvement Loop
 
 The agent does not make decisions in isolation.
@@ -121,6 +138,15 @@ This creates a feedback loop where future decisions improve based on prior outco
 
 This demonstrates that access to observability data and prior decisions significantly improves agent performance.
 
+## Results
+
+- 43% improvement when Phoenix history is available
+- Autonomous detection of at-risk jobs before failure
+- Automatic recovery of stalled and failed jobs
+- Full reasoning transparency for every action
+- Live deployment on Google Cloud Run
+- Real-time observability through Arize Phoenix
+
 ## Arize Phoenix Integration
 
 Arize Phoenix is not used only for observability.
@@ -139,25 +165,16 @@ This transforms observability data into actionable operational intelligence.
 
 ## Demonstrated Capabilities
 
- Autonomous anomaly detection
-
-Failure prediction
-
- Self-healing job recovery
-
-Trace-driven reasoning
-
- Agent self-evaluation
-
-Learning from historical decisions
-
-Production deployment on Google Cloud Run
-
-Real-time dashboard
-
-OpenTelemetry tracing
-
-Arize Phoenix integration
+- Autonomous anomaly detection
+- Failure prediction
+- Self-healing job recovery
+- Trace-driven reasoning
+- Agent self-evaluation
+- Learning from historical decisions
+- Production deployment on Google Cloud Run 
+- Real-time dashboard 
+- OpenTelemetry tracing
+- Arize Phoenix integration
 
 ## Tech Stack
 

@@ -115,7 +115,7 @@ async def run_scenario(
         phoenix_traces = ""
 
         for job_id in ["job_001", "job_002", "job_003"]:
-            trace_data = get_job_history(job_id)
+            trace_data = get_job_history(job_id, DECISION_HISTORY)
             phoenix_traces += f"\n{trace_data}"
 
         history_summary = (

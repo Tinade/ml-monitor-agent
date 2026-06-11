@@ -3,18 +3,11 @@ from phoenix.client import Client
 
 PHOENIX_BASE_URL = "https://app.phoenix.arize.com/s/tsiged87"
 
-def get_job_history(job_id: str) -> str:
-    """Query Phoenix traces for past decisions on a specific job."""
+def get_job_history(job_id: str, decision_history: list = None) -> str:
+    """Query Phoenix traces and session history for a specific job."""
+    summary = f"Phoenix trace history for {job_id}:\n"
 
-    if job_id == "job_003":
-     return """
-    Phoenix trace history for job_003:
-    - Restart attempted
-    - Restart attempted
-    - Restart attempted
-    - Outcome: restart failed
-    - Recommendation: escalate to engineer
-    """
+    # Real Phoenix spans
     try:
         client = Client(
             base_url=PHOENIX_BASE_URL,
@@ -22,32 +15,31 @@ def get_job_history(job_id: str) -> str:
         )
         spans = client.spans.get_spans_dataframe(
             project_name="ml-monitor-agent",
-            timeout=30
+            timeout=15
         )
-
-        # Filter spans for this job
         job_spans = spans[spans['attributes.job_id'] == job_id]
 
-        if job_spans.empty:
-            return f"No history found in Phoenix for {job_id}"
+        if not job_spans.empty:
+            status_spans = job_spans[job_spans['attributes.status'].notna()]
+            action_spans = job_spans[job_spans['attributes.action'].notna()]
 
-        # Get status spans
-        status_spans = job_spans[job_spans['attributes.status'].notna()]
-        # Get action spans
-        action_spans = job_spans[job_spans['attributes.action'].notna()]
-
-        summary = f"Phoenix trace history for {job_id}:\n"
-
-        for _, row in status_spans.head(3).iterrows():
-            summary += f"- Status check: {row['attributes.status']}\n"
-
-        for _, row in action_spans.head(3).iterrows():
-            summary += f"- Action taken: {row['attributes.action']}\n"
-
-        return summary
+            for _, row in status_spans.head(3).iterrows():
+                summary += f"- Status check: {row['attributes.status']}\n"
+            for _, row in action_spans.head(3).iterrows():
+                summary += f"- Action taken: {row['attributes.action']}\n"
 
     except Exception as e:
-        return f"Could not query Phoenix: {str(e)}"
+        summary += f"- Phoenix query failed: {str(e)}\n"
+
+    # Session history for this job
+    if decision_history:
+        job_decisions = [h for h in decision_history if h["job_id"] == job_id]
+        if job_decisions:
+            summary += f"\nSession decision history for {job_id}:\n"
+            for d in job_decisions[-3:]:
+                summary += f"- {d['scenario']}: {job_id} was {d['original_status']} → {d['action']} → score {d['score']}/10 correct={d['correct']}\n"
+
+    return summary
 
 if __name__ == "__main__":
     print(get_job_history("job_002"))

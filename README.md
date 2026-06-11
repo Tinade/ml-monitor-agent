@@ -1,4 +1,4 @@
-# ML Monitor Agent Self-Healing ML Infrastructure
+# A Self-Healing AI Agent for Autonomous ML Infrastructure
 
 > ML training jobs fail silently at 3am. On-call engineers get paged to check logs, restart jobs, and document decisions  work that should be automated. This agent does all of that autonomously, learns from every decision, and gets smarter every run.
 
@@ -14,10 +14,10 @@ Click **Run Agent Now** to watch the agent monitor jobs, detect anomalies, read 
 ## Screenshots
 
 ### Dashboard  Job Health Scores and Scenario Results
-![Dashboard](docs/screenshot-dashboard.png)
+![Dashboard](docs/Screenshot-new-dashboard.png)
 
 ### Agent Reasoning Log  Real Phoenix Trace History
-![Reasoning Log](docs/screenshot-reasoning.png)
+![Reasoning Log](docs/screenshot-Agent-Reasoning.png)
 
 ### Score Progression Chart  Agent Learning Across Runs
 ![Score Chart](docs/screenshot-chart.png)
@@ -31,9 +31,41 @@ Click **Run Agent Now** to watch the agent monitor jobs, detect anomalies, read 
 5. **Evaluate** — scores every decision 1-10 using Gemini as an independent LLM-as-Judge
 6. **Improve** — accumulates decision history across runs, getting smarter each time
 
+## Why This Matters
+
+Modern ML training runs can consume hundreds of GPU-hours.
+
+A single failed training job can waste thousands of dollars and delay production deployments.
+
+Current monitoring systems generate alerts but still require engineers to:
+
+- Inspect logs
+- Review historical incidents
+- Decide corrective actions
+- Document outcomes
+
+ML Monitor Agent automates this workflow end-to-end.
+
+## Self-Improvement Loop
+
+The agent does not make decisions in isolation.
+
+Before acting, it:
+
+1. Retrieves Phoenix trace history
+2. Reviews previous decisions
+3. Evaluates what worked
+4. Applies those lessons to current incidents
+5. Scores itself using Gemini as an independent judge
+
+This creates a feedback loop where future decisions improve based on prior outcomes.
 ---
 
 ## Architecture
+
+
+### Score Progression Chart  Agent Learning Across Runs
+![Architecture](docs/screenshot-arc.png)
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -74,13 +106,53 @@ Click **Run Agent Now** to watch the agent monitor jobs, detect anomalies, read 
 
 ## Scenario Results
 
-| Scenario | Description | Avg Score |
-|---|---|---|
-| Baseline | job_001 running, job_002 stalled, job_003 failed | 9.3/10 |
-| Harder | All jobs stalled or failed | 9.0/10 |
-| Complex | Mixed failures with anomaly detection | 9.0/10 |
+## Learning Impact
 
+| Configuration | Average Score |
+|--------------|--------------|
+| Without History | 6.3/10 |
+| With Phoenix History | 9.0/10 |
+| Improvement | +43% |
+
+This demonstrates that access to observability data and prior decisions significantly improves agent performance.
+
+## Arize Phoenix Integration
+
+Arize Phoenix is not used only for observability.
+
+The agent actively consumes Phoenix trace history before making decisions.
+
+Phoenix enables the agent to:
+
+- Understand previous failures
+- Review historical actions
+- Compare outcomes
+- Justify decisions with evidence
+
+This transforms observability data into actionable operational intelligence.
 ---
+
+## Demonstrated Capabilities
+
+ Autonomous anomaly detection
+
+Failure prediction
+
+ Self-healing job recovery
+
+Trace-driven reasoning
+
+ Agent self-evaluation
+
+Learning from historical decisions
+
+Production deployment on Google Cloud Run
+
+Real-time dashboard
+
+OpenTelemetry tracing
+
+Arize Phoenix integration
 
 ## Tech Stack
 

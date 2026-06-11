@@ -55,23 +55,58 @@ agent = Agent(
     Use check_job_status for each job to get current status.
 
     STEP 3 — DECIDE BASED ON HISTORY + CURRENT STATUS:
+
     If the job is stalled or failed:
-        - If history shows restarting worked before → restart and say "restarting because this worked before"
-        - If no history exists → restart and say "no history found, restarting as default action"
+
+        - If history shows restarting worked before:
+            restart and explain that history supports the action
+
+        - If history explicitly shows:
+            success=False multiple times,
+            restart failed,
+            or escalation recommended:
+            do not restart and recommend escalation to an engineer
+
+        - If history is missing, incomplete, or ambiguous:
+            restart as the default remediation action
+
+    IMPORTANT:
+    Lack of evidence is NOT evidence of failure.
+
+    Do not assume a restart failed simply because multiple restart
+    actions exist in the history.
+
+    Only treat a restart as unsuccessful if the history explicitly
+    contains:
+        - success=False
+        - restart failed
+        - escalation recommended
+
     If the job is running BUT at_risk is True:
-        - Warn: "job is running but at risk — loss is high and progress is low"
-        - Restart it proactively
-    If the job is running and at_risk is False → do nothing.
+
+        - If history shows proactive restart improved outcomes:
+            restart proactively
+
+        - Otherwise:
+            warn the user and continue monitoring
+
+    If the job is running and at_risk is False:
+        do nothing
 
     STEP 4 — EXPLAIN YOUR DECISION:
     Always state:
     - What history you found in Phoenix
     - What the current status is
-    - What action you took and why""",
+    - What action you took
+    - Why you took that action""",
     tools=[check_job_status, restart_job, phoenix_mcp],
 )
 
-async def run_scenario(scenario_name: str, scenario_jobs: dict) -> list:
+async def run_scenario(
+    scenario_name: str,
+    scenario_jobs: dict,
+    use_history: bool = True
+) -> list:
     """Run the agent on a specific scenario and return evaluation scores."""
 
     # Always create fresh Job objects to prevent mutation carry-over
@@ -89,22 +124,24 @@ async def run_scenario(scenario_name: str, scenario_jobs: dict) -> list:
     # Capture original states
     original_states = {job_id: job.to_dict() for job_id, job in tools.JOBS.items()}
 
-    # Build history summary
-    
     history_summary = ""
 
-    # Query real Phoenix traces
-    phoenix_traces = ""
-    for job_id in ["job_001", "job_002", "job_003"]:
-        trace_data = get_job_history(job_id)
-        phoenix_traces += f"\n{trace_data}"
+    if use_history:
+        phoenix_traces = ""
 
-    history_summary = f"\n\nPHOENIX TRACE HISTORY (real observability data):\n{phoenix_traces}"
+        for job_id in ["job_001", "job_002", "job_003"]:
+            trace_data = get_job_history(job_id, DECISION_HISTORY)
+            phoenix_traces += f"\n{trace_data}"
 
-    if DECISION_HISTORY:
-        history_summary += "\n\nSESSION DECISION HISTORY:\n"
-        for d in DECISION_HISTORY:
-            history_summary += f"- {d['scenario']}: {d['job_id']} was {d['original_status']} → {d['action']} → score {d['score']}/10 correct={d['correct']}\n"
+        history_summary = (
+            f"\n\nPHOENIX TRACE HISTORY "
+            f"(real observability data):\n{phoenix_traces}"
+        )
+    else:
+        history_summary = (
+            "\n\nNO PHOENIX HISTORY AVAILABLE. "
+            "Make decisions using only current job status."
+        )
 
     # Run agent
     session_service = InMemorySessionService()
@@ -143,12 +180,41 @@ If no history exists yet, say "no history found, restarting as default action." 
         print(f"Agent run failed for {scenario_name}: {str(e)}")
 
     # Evaluate decisions
+    
     scores = []
     print(f"\n--- Evaluating {scenario_name} ---\n")
+
+    print("DEBUG: entering evaluation loop")
+
     for job_id, job in tools.JOBS.items():
+
+        print(f"DEBUG evaluating {job_id}")
+
         original = original_states[job_id]
+
         action = "restart_job" if job.status == "restarted" else "do_nothing"
-        outcome = {"success": True}
+
+        success = False
+
+        if original["status"] in ["failed", "stalled"]:
+
+            success = (action == "restart_job")
+
+        elif original["status"] == "running":
+
+            success = (action == "do_nothing")
+
+        outcome = {
+            "success": success
+        }
+
+        print(
+            f"DEBUG: job_id={job_id}, "
+            f"status={original['status']}, "
+            f"action={action}, "
+            f"success={success}"
+        )
+
         try:
             evaluation = evaluate_decision(
                 job_id=job_id,
@@ -156,18 +222,29 @@ If no history exists yet, say "no history found, restarting as default action." 
                 action=action,
                 outcome=outcome
             )
+
             scores.append(evaluation)
+
             DECISION_HISTORY.append({
-                "scenario": scenario_name,
-                "job_id": job_id,
-                "original_status": original["status"],
-                "action": action,
-                "score": evaluation["score"],
-                "correct": evaluation["correct"]
+            "scenario": scenario_name,
+            "job_id": job_id,
+            "original_status": original["status"],
+            "action": action,
+            "score": evaluation["score"],
+            "correct": evaluation["correct"],
+            "success": success
             })
-            print(f"{job_id}: score={evaluation['score']}/10 correct={evaluation['correct']}")
+
+            print(
+                f"{job_id}: "
+                f"score={evaluation['score']}/10 "
+                f"correct={evaluation['correct']}"
+            )
+
         except Exception as e:
-            print(f"Evaluation failed for {job_id}: {str(e)}")
+            import traceback
+            print(f"Evaluation failed for {job_id}")
+            traceback.print_exc()
 
     return scores, agent_response
 

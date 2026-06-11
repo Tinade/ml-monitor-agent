@@ -165,31 +165,51 @@ If no history exists yet, say "no history found, restarting as default action." 
         print(f"Agent run failed for {scenario_name}: {str(e)}")
 
     # Evaluate decisions
+    
     scores = []
     print(f"\n--- Evaluating {scenario_name} ---\n")
+
+    print("DEBUG: entering evaluation loop")
+
     for job_id, job in tools.JOBS.items():
+
+        print(f"DEBUG evaluating {job_id}")
+
         original = original_states[job_id]
-    action = "restart_job" if job.status == "restarted" else "do_nothing"
 
-    success = False
+        action = "restart_job" if job.status == "restarted" else "do_nothing"
 
-    # job_003 is our escalation scenario
-    if job_id == "job_003":
+        success = False
 
-        if action == "do_nothing":
-            success = True
+        # job_003 is our escalation scenario
+        if job_id == "job_003":
 
-    # normal restart behavior
-    elif original["status"] in ["failed", "stalled"]:
+            if action == "do_nothing":
+                success = True
 
-        if action == "restart_job":
-            success = True
+        # normal restart behavior
+        elif original["status"] in ["failed", "stalled"]:
 
-    # healthy running jobs should be left alone
-    elif original["status"] == "running":
+            if action == "restart_job":
+                success = True
 
-        if action == "do_nothing":
-            success = True
+        # healthy running jobs should be left alone
+        elif original["status"] == "running":
+
+            if action == "do_nothing":
+                success = True
+
+        outcome = {
+            "success": success
+        }
+
+        print(
+            f"DEBUG: job_id={job_id}, "
+            f"status={original['status']}, "
+            f"action={action}, "
+            f"success={success}"
+        )
+
         try:
             evaluation = evaluate_decision(
                 job_id=job_id,
@@ -197,7 +217,9 @@ If no history exists yet, say "no history found, restarting as default action." 
                 action=action,
                 outcome=outcome
             )
+
             scores.append(evaluation)
+
             DECISION_HISTORY.append({
                 "scenario": scenario_name,
                 "job_id": job_id,
@@ -206,9 +228,17 @@ If no history exists yet, say "no history found, restarting as default action." 
                 "score": evaluation["score"],
                 "correct": evaluation["correct"]
             })
-            print(f"{job_id}: score={evaluation['score']}/10 correct={evaluation['correct']}")
+
+            print(
+                f"{job_id}: "
+                f"score={evaluation['score']}/10 "
+                f"correct={evaluation['correct']}"
+            )
+
         except Exception as e:
-            print(f"Evaluation failed for {job_id}: {str(e)}")
+            import traceback
+            print(f"Evaluation failed for {job_id}")
+            traceback.print_exc()
 
     return scores, agent_response
 
